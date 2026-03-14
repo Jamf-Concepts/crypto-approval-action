@@ -37,8 +37,9 @@ export function hashMessage(message: ApprovalMessage): Buffer {
 }
 
 export function parseSignedApproval(commentBody: string): SignedApproval | null {
+  // More flexible regex to handle different line endings and whitespace
   const regex =
-    /```crypto-approval\n([\s\S]*?)\n```[\s\S]*?```signature\n([a-fA-F0-9]+)\n```/
+    /```crypto-approval\s*([\s\S]*?)```[\s\S]*?```signature\s*([a-fA-F0-9]+)\s*```/
 
   const match = commentBody.match(regex)
   if (!match) return null
