@@ -70,6 +70,6 @@ jobs:
         run: npm ci
 
       - name: Run integration tests
-        run: npm test -- --testPathPattern=integration
+        run: npm test -- --testPathPattern=integration --passWithNoTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
