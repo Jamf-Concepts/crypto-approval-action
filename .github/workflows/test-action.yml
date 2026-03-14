@@ -31,7 +31,9 @@ jobs:
         id: crypto-approval
         uses: ./
         with:
-          # Test addresses - replace with real addresses for production
+          # Allowed signer addresses - hardcoded intentionally for transparency
+          # Anyone can verify which hardware wallets are authorized to approve PRs
+          # Changes to this list are tracked in git history
           allowed-keys: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
           require-canary: 'false'
           signature-max-age: '86400'
