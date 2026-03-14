@@ -53,22 +53,11 @@ async function run(): Promise<void> {
       error: 'No valid crypto approval found',
     }
 
-    core.info(`Found ${comments.length} comments to check`)
-
     for (const comment of comments) {
-      core.debug(`Checking comment ${comment.id} from ${comment.user?.login}`)
       const approval = parseSignedApproval(comment.body || '')
-      if (!approval) {
-        core.debug(`Comment ${comment.id} does not contain approval format`)
-        continue
-      }
+      if (!approval) continue
 
       core.info(`Found approval comment from ${comment.user?.login}`)
-
-      core.info(
-        `Approval message: repo=${approval.message.repo}, pr=${approval.message.prNumber}, sha=${approval.message.headSha}`
-      )
-      core.info(`Expected: repo=${repo}, pr=${prNumber}, sha=${headSha}`)
 
       if (!doesMessageMatchPR(approval.message, repo, prNumber, headSha)) {
         core.warning('Approval message does not match current PR state')
@@ -80,17 +69,10 @@ async function run(): Promise<void> {
         continue
       }
 
-      core.info(`Verifying signature: ${approval.signature.substring(0, 20)}...`)
-      core.info(`Allowed keys: ${config.allowedKeys.join(', ')}`)
-
       const verification = verifySignature(
         approval.message,
         approval.signature,
         config.allowedKeys
-      )
-
-      core.info(
-        `Verification result: valid=${verification.valid}, signer=${verification.signer || 'none'}, error=${verification.error || 'none'}`
       )
 
       if (!verification.valid) {
