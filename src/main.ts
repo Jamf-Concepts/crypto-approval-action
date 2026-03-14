@@ -65,7 +65,9 @@ async function run(): Promise<void> {
 
       core.info(`Found approval comment from ${comment.user?.login}`)
 
-      core.info(`Approval message: repo=${approval.message.repo}, pr=${approval.message.prNumber}, sha=${approval.message.headSha}`)
+      core.info(
+        `Approval message: repo=${approval.message.repo}, pr=${approval.message.prNumber}, sha=${approval.message.headSha}`
+      )
       core.info(`Expected: repo=${repo}, pr=${prNumber}, sha=${headSha}`)
 
       if (!doesMessageMatchPR(approval.message, repo, prNumber, headSha)) {
@@ -87,7 +89,9 @@ async function run(): Promise<void> {
         config.allowedKeys
       )
 
-      core.info(`Verification result: valid=${verification.valid}, signer=${verification.signer || 'none'}, error=${verification.error || 'none'}`)
+      core.info(
+        `Verification result: valid=${verification.valid}, signer=${verification.signer || 'none'}, error=${verification.error || 'none'}`
+      )
 
       if (!verification.valid) {
         core.warning(`Signature verification failed: ${verification.error}`)
