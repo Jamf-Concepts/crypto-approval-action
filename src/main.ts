@@ -12,21 +12,35 @@ async function run(): Promise<void> {
     validateConfig(config)
 
     const context = github.context
+    const octokit = github.getOctokit(config.githubToken)
 
-    if (!context.payload.pull_request) {
-      core.setFailed('This action must run on a pull_request event')
+    let prNumber: number
+    let headSha: string
+
+    // Handle both pull_request and issue_comment events
+    if (context.payload.pull_request) {
+      prNumber = context.payload.pull_request.number
+      headSha = context.payload.pull_request.head.sha
+    } else if (context.payload.issue?.pull_request) {
+      // This is a comment on a PR
+      prNumber = context.payload.issue.number
+      // Fetch PR details to get head SHA
+      const { data: pr } = await octokit.rest.pulls.get({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        pull_number: prNumber,
+      })
+      headSha = pr.head.sha
+    } else {
+      core.setFailed('This action must run on a pull_request or issue_comment event')
       return
     }
 
-    const prNumber = context.payload.pull_request.number
-    const headSha = context.payload.pull_request.head.sha
     const repo = `${context.repo.owner}/${context.repo.repo}`
 
     core.info(`Checking crypto approvals for PR #${prNumber}`)
     core.info(`Head SHA: ${headSha}`)
     core.info(`Allowed signers: ${config.allowedKeys.length}`)
-
-    const octokit = github.getOctokit(config.githubToken)
 
     const { data: comments } = await octokit.rest.issues.listComments({
       owner: context.repo.owner,
