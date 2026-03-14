@@ -119,6 +119,18 @@ async function run(): Promise<void> {
     core.setOutput('signer', result.signer || '')
     core.setOutput('canary-balance', result.canaryBalance || '')
 
+    // Set commit status so branch protection can use it
+    await octokit.rest.repos.createCommitStatus({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      sha: headSha,
+      state: result.valid ? 'success' : 'failure',
+      context: 'crypto-approval',
+      description: result.valid
+        ? `Approved by ${result.signer}`
+        : result.error || 'No valid crypto approval',
+    })
+
     if (!result.valid) {
       core.setFailed(result.error || 'No valid crypto approval found')
     } else {
