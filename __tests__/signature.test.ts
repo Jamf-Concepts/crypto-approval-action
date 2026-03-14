@@ -3,10 +3,10 @@ import {
   isValidEthereumAddress,
   checksumAddress,
   recoverAddress,
-  ethereumPersonalSign,
+  hashPersonalMessage,
 } from '../src/signature'
 import type { ApprovalMessage } from '../src/types'
-import { hashMessage } from '../src/message'
+import { serializeMessage } from '../src/message'
 import { secp256k1 } from '@noble/curves/secp256k1'
 
 describe('signature', () => {
@@ -25,10 +25,11 @@ describe('signature', () => {
     nonce: 'deadbeef12345678deadbeef12345678',
   }
 
+  // Sign the same way MetaMask personal_sign does
   function signMessage(message: ApprovalMessage, privateKey: string): string {
-    const messageHash = hashMessage(message)
-    const ethHash = ethereumPersonalSign(messageHash)
-    const sig = secp256k1.sign(ethHash, privateKey)
+    const serialized = serializeMessage(message)
+    const messageHash = hashPersonalMessage(serialized)
+    const sig = secp256k1.sign(messageHash, privateKey)
     const r = sig.r.toString(16).padStart(64, '0')
     const s = sig.s.toString(16).padStart(64, '0')
     const v = (sig.recovery + 27).toString(16).padStart(2, '0')
@@ -73,16 +74,16 @@ describe('signature', () => {
   describe('recoverAddress', () => {
     it('recovers address from valid signature', () => {
       const signature = signMessage(mockMessage, testPrivateKey)
-      const messageHash = hashMessage(mockMessage)
-      const recovered = recoverAddress(messageHash, signature)
+      const serialized = serializeMessage(mockMessage)
+      const recovered = recoverAddress(serialized, signature)
 
       expect(recovered).toBe(testAddress.toLowerCase())
     })
 
     it('returns null for invalid signature length', () => {
-      const messageHash = hashMessage(mockMessage)
-      expect(recoverAddress(messageHash, 'invalid')).toBeNull()
-      expect(recoverAddress(messageHash, 'a'.repeat(128))).toBeNull() // 64 bytes, not 65
+      const serialized = serializeMessage(mockMessage)
+      expect(recoverAddress(serialized, 'invalid')).toBeNull()
+      expect(recoverAddress(serialized, 'a'.repeat(128))).toBeNull() // 64 bytes, not 65
     })
   })
 

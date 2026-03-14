@@ -1,15 +1,20 @@
 import { secp256k1 } from '@noble/curves/secp256k1'
 import { keccak_256 } from '@noble/hashes/sha3'
 import type { ApprovalMessage, VerificationResult } from './types.js'
-import { hashMessage } from './message.js'
+import { serializeMessage } from './message.js'
 
-export function ethereumPersonalSign(messageHash: Buffer): Buffer {
-  const prefix = Buffer.from(`\x19Ethereum Signed Message:\n${messageHash.length}`)
-  const prefixed = Buffer.concat([prefix, messageHash])
-  return Buffer.from(keccak_256(prefixed))
+/**
+ * Hash a message the same way MetaMask's personal_sign does:
+ * keccak256("\x19Ethereum Signed Message:\n" + message.length + message)
+ */
+export function hashPersonalMessage(message: string): Uint8Array {
+  const messageBytes = Buffer.from(message, 'utf8')
+  const prefix = Buffer.from(`\x19Ethereum Signed Message:\n${messageBytes.length}`)
+  const prefixed = Buffer.concat([prefix, messageBytes])
+  return keccak_256(prefixed)
 }
 
-export function recoverAddress(messageHash: Buffer, signature: string): string | null {
+export function recoverAddress(message: string, signature: string): string | null {
   try {
     const sigBytes = Buffer.from(signature, 'hex')
 
@@ -31,8 +36,8 @@ export function recoverAddress(messageHash: Buffer, signature: string): string |
       BigInt('0x' + s.toString('hex'))
     ).addRecoveryBit(v)
 
-    const ethHash = ethereumPersonalSign(messageHash)
-    const publicKey = sig.recoverPublicKey(ethHash)
+    const messageHash = hashPersonalMessage(message)
+    const publicKey = sig.recoverPublicKey(messageHash)
     const pubKeyBytes = publicKey.toRawBytes(false).slice(1) // Remove 0x04 prefix
     const addressHash = keccak_256(pubKeyBytes)
     const address = '0x' + Buffer.from(addressHash).subarray(-20).toString('hex')
@@ -50,8 +55,9 @@ export function verifySignature(
 ): VerificationResult {
   const normalizedAllowed = allowedAddresses.map((addr) => addr.toLowerCase())
 
-  const messageHash = hashMessage(message)
-  const recoveredAddress = recoverAddress(messageHash, signature)
+  // Use the serialized message string (same format MetaMask signed)
+  const serialized = serializeMessage(message)
+  const recoveredAddress = recoverAddress(serialized, signature)
 
   if (!recoveredAddress) {
     return {
