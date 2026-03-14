@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto PR Approval - Sign with MetaMask</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    h1 { color: #00d4aa; }
+    label { display: block; margin-top: 16px; font-weight: 600; }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+      background: #0f0f1a;
+      color: #eee;
+    }
+    button {
+      margin-top: 20px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #connectBtn { background: #f6851b; color: white; }
+    #connectBtn:hover { background: #e2761b; }
+    #signBtn { background: #00d4aa; color: #1a1a2e; }
+    #signBtn:hover { background: #00b894; }
+    #signBtn:disabled { background: #555; cursor: not-allowed; }
+    .status {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+    .success { background: #00d4aa22; border: 1px solid #00d4aa; }
+    .error { background: #ff6b6b22; border: 1px solid #ff6b6b; }
+    .info { background: #4ecdc422; border: 1px solid #4ecdc4; }
+    #output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #0f0f1a;
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .hidden { display: none; }
+    code { background: #333; padding: 2px 6px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Crypto PR Approval Signer</h1>
+
+  <div id="step1">
+    <p>Connect your MetaMask wallet to sign PR approval messages.</p>
+    <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
+    <div id="walletStatus" class="status info hidden"></div>
+  </div>
+
+  <div id="step2" class="hidden">
+    <label>Repository (owner/repo)
+      <input type="text" id="repo" placeholder="danjamf/crypto-approval-action">
+    </label>
+
+    <label>PR Number
+      <input type="number" id="prNumber" placeholder="1">
+    </label>
+
+    <label>Head Commit SHA
+      <input type="text" id="headSha" placeholder="abc123...">
+    </label>
+
+    <button id="signBtn" onclick="signMessage()">Sign Approval</button>
+
+    <div id="signStatus" class="status hidden"></div>
+  </div>
+
+  <div id="output" class="hidden"></div>
+
+  <script>
+    let account = null;
+
+    async function connectWallet() {
+      if (typeof window.ethereum === 'undefined') {
+        showStatus('walletStatus', 'MetaMask not detected. Please install MetaMask.', 'error');
+        return;
+      }
+
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        account = accounts[0];
+        showStatus('walletStatus', `Connected: ${account}`, 'success');
+        document.getElementById('step2').classList.remove('hidden');
+        document.getElementById('connectBtn').textContent = 'Connected';
+        document.getElementById('connectBtn').disabled = true;
+      } catch (err) {
+        showStatus('walletStatus', `Connection failed: ${err.message}`, 'error');
+      }
+    }
+
+    function generateNonce() {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function signMessage() {
+      const repo = document.getElementById('repo').value.trim();
+      const prNumber = parseInt(document.getElementById('prNumber').value, 10);
+      const headSha = document.getElementById('headSha').value.trim();
+
+      if (!repo || !prNumber || !headSha) {
+        showStatus('signStatus', 'Please fill in all fields', 'error');
+        return;
+      }
+
+      const timestamp = Math.floor(Date.now() / 1000);
+      const nonce = generateNonce();
+
+      const message = {
+        repo,
+        prNumber,
+        headSha,
+        timestamp,
+        nonce
+      };
+
+      // Create the serialized message for signing
+      const serialized = `CRYPTO_APPROVAL:v1:${repo}:${prNumber}:${headSha}:${timestamp}:${nonce}`;
+
+      try {
+        showStatus('signStatus', 'Please check MetaMask to sign...', 'info');
+
+        // Use personal_sign (EIP-191)
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [serialized, account]
+        });
+
+        // Remove 0x prefix for the comment format
+        const sigHex = signature.startsWith('0x') ? signature.slice(2) : signature;
+
+        const comment = formatComment(message, sigHex);
+
+        document.getElementById('output').classList.remove('hidden');
+        document.getElementById('output').textContent = comment;
+
+        showStatus('signStatus', 'Signed successfully! Copy the comment below and paste it on your PR.', 'success');
+
+        // Also copy to clipboard
+        try {
+          await navigator.clipboard.writeText(comment);
+          showStatus('signStatus', 'Signed successfully! Comment copied to clipboard.', 'success');
+        } catch (e) {
+          // Clipboard might not be available
+        }
+
+      } catch (err) {
+        showStatus('signStatus', `Signing failed: ${err.message}`, 'error');
+      }
+    }
+
+    function formatComment(message, signature) {
+      const messageJson = JSON.stringify(message, null, 2);
+      return `## Crypto-Signed Approval
+
+This PR has been cryptographically approved with a hardware wallet signature.
+
+\`\`\`crypto-approval
+${messageJson}
+\`\`\`
+
+\`\`\`signature
+${signature}
+\`\`\`
+
+---
+*Verified by [crypto-approval-action](https://github.com/danjamf/crypto-approval-action)*`;
+    }
+
+    function showStatus(elementId, message, type) {
+      const el = document.getElementById(elementId);
+      el.textContent = message;
+      el.className = `status ${type}`;
+      el.classList.remove('hidden');
+    }
+
+    // Check if already connected
+    if (typeof window.ethereum !== 'undefined') {
+      window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+        if (accounts.length > 0) {
+          account = accounts[0];
+          showStatus('walletStatus', `Connected: ${account}`, 'success');
+          document.getElementById('step2').classList.remove('hidden');
+          document.getElementById('connectBtn').textContent = 'Connected';
+          document.getElementById('connectBtn').disabled = true;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
