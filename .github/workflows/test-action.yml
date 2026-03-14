@@ -1,0 +1,67 @@
+name: Test Action
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  # This job tests the action on PRs with crypto approval comments
+  test-crypto-approval:
+    runs-on: ubuntu-latest
+    # Only run on PR events or comments on PRs
+    if: github.event_name == 'pull_request' || (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run bundle
+
+      - name: Run crypto approval check
+        id: crypto-approval
+        uses: ./
+        with:
+          # Test addresses - replace with real addresses for production
+          allowed-keys: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          require-canary: 'false'
+          signature-max-age: '86400'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true  # Don't fail the workflow if no approval found
+
+      - name: Report result
+        run: |
+          echo "Crypto approval valid: ${{ steps.crypto-approval.outputs.valid }}"
+          echo "Signer: ${{ steps.crypto-approval.outputs.signer }}"
+          echo "Canary balance: ${{ steps.crypto-approval.outputs.canary-balance }}"
+
+  # Integration test with mock signature (for CI testing)
+  integration-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: npm test -- --testPathPattern=integration
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
