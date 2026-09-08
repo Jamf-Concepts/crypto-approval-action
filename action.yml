@@ -1,0 +1,57 @@
+name: 'Crypto-Signed PR Approval'
+description: 'Validates hardware wallet signatures on PR approvals with optional blockchain canary'
+author: 'Dan Cuddeford'
+
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  allowed-keys:
+    description: 'Comma-separated list of allowed public keys (hex or checksummed addresses). If omitted, reads from keyowners-file.'
+    required: false
+  keyowners-file:
+    description: 'Path to KEYOWNERS file listing authorized addresses (one per line)'
+    required: false
+    default: '.github/KEYOWNERS'
+  min-approvals:
+    description: 'Minimum number of unique signers required (M-of-N multi-sig)'
+    required: false
+    default: '1'
+  require-canary:
+    description: 'Whether to require blockchain balance check'
+    required: false
+    default: 'false'
+  canary-chain:
+    description: 'Blockchain to check for canary balance (ethereum, base, polygon)'
+    required: false
+    default: 'ethereum'
+  canary-rpc-url:
+    description: 'RPC URL for blockchain queries (defaults to public RPC)'
+    required: false
+  canary-min-balance:
+    description: 'Minimum balance in wei required for canary check'
+    required: false
+    default: '10000000000000000'
+  signature-max-age:
+    description: 'Maximum age of signature in seconds'
+    required: false
+    default: '3600'
+  github-token:
+    description: 'GitHub token for API access'
+    required: true
+    default: ${{ github.token }}
+
+outputs:
+  valid:
+    description: 'Whether enough valid crypto approvals were found'
+  signer:
+    description: 'Comma-separated addresses of valid signers'
+  approval-count:
+    description: 'Number of unique valid approvals'
+  canary-balance:
+    description: 'The canary wallet balance (if checked)'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

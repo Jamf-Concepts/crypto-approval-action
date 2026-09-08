@@ -1,0 +1,12 @@
+# KEYOWNERS - Authorized signers for crypto-approval
+# One address per line, comments start with #
+#
+# Copy this file to .github/KEYOWNERS and add your team's addresses.
+# Changes to this file are tracked in git history.
+
+0xYourAddress1  # Alice - Security Lead
+0xYourAddress2  # Bob - Platform Team
+0xYourAddress3  # Charlie - CTO
+
+# Inactive signers (commented out)
+# 0xOldSigner  # Dave - Left company

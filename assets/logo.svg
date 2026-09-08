@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="100%" style="stop-color:#34D399"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield shape -->
+  <path d="M60 8 L105 25 L105 55 C105 80 85 100 60 112 C35 100 15 80 15 55 L15 25 Z"
+        fill="url(#shieldGrad)"
+        stroke="#312E81"
+        stroke-width="2"/>
+
+  <!-- Inner shield highlight -->
+  <path d="M60 16 L97 30 L97 55 C97 75 80 92 60 102 C40 92 23 75 23 55 L23 30 Z"
+        fill="none"
+        stroke="rgba(255,255,255,0.3)"
+        stroke-width="1"/>
+
+  <!-- Key icon (simplified) -->
+  <g transform="translate(35, 35)">
+    <!-- Key head (circle with hole) -->
+    <circle cx="15" cy="15" r="12" fill="none" stroke="#E0E7FF" stroke-width="3"/>
+    <circle cx="15" cy="15" r="5" fill="#4F46E5"/>
+
+    <!-- Key shaft -->
+    <rect x="25" y="12" width="22" height="6" rx="2" fill="#E0E7FF"/>
+
+    <!-- Key teeth -->
+    <rect x="38" y="18" width="4" height="6" rx="1" fill="#E0E7FF"/>
+    <rect x="44" y="18" width="4" height="8" rx="1" fill="#E0E7FF"/>
+  </g>
+
+  <!-- Checkmark badge -->
+  <circle cx="90" cy="90" r="18" fill="url(#checkGrad)" stroke="#fff" stroke-width="2"/>
+  <path d="M82 90 L87 95 L98 84" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
