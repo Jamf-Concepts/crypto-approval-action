@@ -39,9 +39,14 @@
     }
     #connectBtn { background: #f6851b; color: white; }
     #connectBtn:hover { background: #e2761b; }
-    #signBtn { background: #00d4aa; color: #1a1a2e; }
-    #signBtn:hover { background: #00b894; }
+    #signBtn, #generateBtn { background: #00d4aa; color: #1a1a2e; }
+    #signBtn:hover, #generateBtn:hover { background: #00b894; }
     #signBtn:disabled { background: #555; cursor: not-allowed; }
+    #manualSection { margin-top: 40px; padding-top: 30px; border-top: 1px solid #333; }
+    #manualOutput pre { background: #0f0f1a; padding: 12px; border-radius: 6px; border: 1px solid #333; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+    #manualOutput h3 { margin-top: 20px; color: #00d4aa; }
+    #manualOutput button { margin-top: 8px; padding: 8px 16px; font-size: 14px; }
+    #formatBtn { margin-top: 12px; }
     .status {
       margin-top: 12px;
       padding: 12px;
@@ -87,9 +92,47 @@
       <input type="text" id="headSha" placeholder="abc123...">
     </label>
 
-    <button id="signBtn" onclick="signMessage()">Sign Approval</button>
+    <button id="signBtn" onclick="signMessage()">Sign with MetaMask</button>
 
     <div id="signStatus" class="status hidden"></div>
+  </div>
+
+  <div id="manualSection">
+    <h2>Manual Signing</h2>
+    <p>Generate the message format for use with other signing tools.</p>
+
+    <label>Repository (owner/repo)
+      <input type="text" id="manualRepo" placeholder="danjamf/crypto-approval-action">
+    </label>
+
+    <label>PR Number
+      <input type="number" id="manualPrNumber" placeholder="1">
+    </label>
+
+    <label>Head Commit SHA
+      <input type="text" id="manualHeadSha" placeholder="abc123...">
+    </label>
+
+    <button id="generateBtn" onclick="generateMessage()">Generate Message</button>
+
+    <div id="generateStatus" class="status hidden"></div>
+  </div>
+
+  <div id="manualOutput" class="hidden">
+    <h3>1. Message to Sign (EIP-191 personal_sign)</h3>
+    <pre id="serializedMessage"></pre>
+    <button onclick="copyToClipboard('serializedMessage')">Copy Message</button>
+
+    <h3>2. Paste Your Signature</h3>
+    <p>After signing the message above with your wallet, paste the signature here:</p>
+    <input type="text" id="manualSignature" placeholder="Signature hex (with or without 0x prefix)">
+    <button id="formatBtn" onclick="formatManualComment()">Generate Comment</button>
+
+    <div id="manualCommentOutput" class="hidden">
+      <h3>3. Comment to Post on PR</h3>
+      <pre id="formattedComment"></pre>
+      <button onclick="copyToClipboard('formattedComment')">Copy Comment</button>
+    </div>
   </div>
 
   <div id="output" class="hidden"></div>
@@ -167,6 +210,76 @@
       } catch (err) {
         showStatus('signStatus', `Signing failed: ${err.message}`, 'error');
       }
+    }
+
+    function generateMessage() {
+      const repo = document.getElementById('manualRepo').value.trim();
+      const prNumber = parseInt(document.getElementById('manualPrNumber').value, 10);
+      const headSha = document.getElementById('manualHeadSha').value.trim();
+
+      if (!repo || !prNumber || !headSha) {
+        showStatus('generateStatus', 'Please fill in all fields', 'error');
+        return;
+      }
+
+      const timestamp = Math.floor(Date.now() / 1000);
+
+      const message = {
+        repo,
+        prNumber,
+        headSha,
+        timestamp
+      };
+
+      const serialized = `CRYPTO_APPROVAL:v1:${repo}:${prNumber}:${headSha}:${timestamp}`;
+
+      manualMessageData = message;
+
+      document.getElementById('serializedMessage').textContent = serialized;
+      document.getElementById('manualOutput').classList.remove('hidden');
+      document.getElementById('manualCommentOutput').classList.add('hidden');
+      document.getElementById('manualSignature').value = '';
+
+      showStatus('generateStatus', 'Message generated! Sign it with your wallet, then paste the signature below.', 'success');
+    }
+
+    let manualMessageData = null;
+
+    async function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Copied to clipboard!');
+      } catch (e) {
+        alert('Failed to copy. Please select and copy manually.');
+      }
+    }
+
+    function formatManualComment() {
+      const signatureInput = document.getElementById('manualSignature').value.trim();
+
+      if (!signatureInput) {
+        alert('Please paste your signature');
+        return;
+      }
+
+      if (!manualMessageData) {
+        alert('Please generate a message first');
+        return;
+      }
+
+      // Remove 0x prefix if present
+      const sigHex = signatureInput.startsWith('0x') ? signatureInput.slice(2) : signatureInput;
+
+      // Validate signature format (should be 130 hex chars for 65 bytes)
+      if (!/^[a-fA-F0-9]{130}$/.test(sigHex)) {
+        alert('Invalid signature format. Expected 65 bytes (130 hex characters).');
+        return;
+      }
+
+      const comment = formatComment(manualMessageData, sigHex);
+      document.getElementById('formattedComment').textContent = comment;
+      document.getElementById('manualCommentOutput').classList.remove('hidden');
     }
 
     function formatComment(message, signature) {
