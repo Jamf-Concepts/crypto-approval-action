@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/danjamf/crypto-approval-action/actions/workflows/ci.yml"><img src="https://github.com/danjamf/crypto-approval-action/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a>
+  <a href="https://github.com/Jamf-Concepts/crypto-approval-action/actions/workflows/ci.yml"><img src="https://github.com/Jamf-Concepts/crypto-approval-action/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
@@ -128,7 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: danjamf/crypto-approval-action@main
+      - uses: Jamf-Concepts/crypto-approval-action@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Reads from .github/KEYOWNERS by default
@@ -139,11 +139,11 @@ jobs:
 
 Use the hosted signing tool:
 
-**https://danjamf.github.io/crypto-approval-action/**
+**https://jamf-concepts.github.io/crypto-approval-action/**
 
 Or run locally:
 ```bash
-git clone https://github.com/danjamf/crypto-approval-action
+git clone https://github.com/Jamf-Concepts/crypto-approval-action
 cd crypto-approval-action
 python3 -m http.server 8080
 # Open http://localhost:8080/tools/sign-with-metamask.html
@@ -231,7 +231,7 @@ Create `.github/KEYOWNERS`:
 ```
 
 ```yaml
-- uses: danjamf/crypto-approval-action@main
+- uses: Jamf-Concepts/crypto-approval-action@main
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     # keyowners-file defaults to .github/KEYOWNERS
@@ -246,7 +246,7 @@ Create `.github/KEYOWNERS`:
 ### Option 2: Hardcoded in workflow
 
 ```yaml
-- uses: danjamf/crypto-approval-action@main
+- uses: Jamf-Concepts/crypto-approval-action@main
   with:
     allowed-keys: '0xAlice,0xBob,0xCharlie'
     github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -261,7 +261,7 @@ Create `.github/KEYOWNERS`:
 ### Option 3: GitHub Secrets
 
 ```yaml
-- uses: danjamf/crypto-approval-action@main
+- uses: Jamf-Concepts/crypto-approval-action@main
   with:
     allowed-keys: ${{ secrets.ALLOWED_SIGNER_KEYS }}
     github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -379,7 +379,7 @@ npm run all
 
 ## Where to get help
 
-If you have questions, encounter bugs, or want to request a feature, please [open an issue](https://github.com/danjamf/crypto-approval-action/issues) on GitHub.
+If you have questions, encounter bugs, or want to request a feature, please [open an issue](https://github.com/Jamf-Concepts/crypto-approval-action/issues) on GitHub.
 
 ## Dependencies
 
