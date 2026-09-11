@@ -381,6 +381,19 @@ npm run all
 
 If you have questions, encounter bugs, or want to request a feature, please [open an issue](https://github.com/danjamf/crypto-approval-action/issues) on GitHub.
 
+## Dependencies
+
+This action uses the following open-source libraries:
+
+| Package | License | Link |
+|---------|---------|------|
+| [@actions/core](https://github.com/actions/toolkit) | MIT | [LICENSE](https://github.com/actions/toolkit/blob/main/LICENSE.md) |
+| [@actions/github](https://github.com/actions/toolkit) | MIT | [LICENSE](https://github.com/actions/toolkit/blob/main/LICENSE.md) |
+| [@noble/curves](https://github.com/paulmillr/noble-curves) | MIT | [LICENSE](https://github.com/paulmillr/noble-curves/blob/main/LICENSE) |
+| [@noble/hashes](https://github.com/paulmillr/noble-hashes) | MIT | [LICENSE](https://github.com/paulmillr/noble-hashes/blob/main/LICENSE) |
+| [ethers](https://github.com/ethers-io/ethers.js) | MIT | [LICENSE](https://github.com/ethers-io/ethers.js/blob/main/LICENSE.md) |
+| [viem](https://github.com/wevm/viem) | MIT | [LICENSE](https://github.com/wevm/viem/blob/main/LICENSE) |
+
 ## License
 
 MIT
