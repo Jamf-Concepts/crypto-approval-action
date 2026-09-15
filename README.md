@@ -377,6 +377,20 @@ npm run bundle
 npm run all
 ```
 
+## Troubleshooting
+
+**Signature expired:** The default max age is 3600 seconds (1 hour). If the action rejects a valid signature, check that system clocks are synchronized between the signing device and GitHub. Increase `signature-max-age` if needed.
+
+**Signature not matched to PR:** New commits pushed after signing will invalidate all existing signatures (by design — the signature is bound to the head SHA). All signers must re-sign after each new commit.
+
+**Signer not recognized:** Verify the signing Ethereum address is listed in `.github/KEYOWNERS` or the `allowed-keys` input. Addresses are compared case-insensitively.
+
+**Canary check failing:** Verify the `CANARY_RPC_URL` secret is set correctly. Public fallback RPCs may be rate-limited under load. Test your RPC URL with `curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' YOUR_RPC_URL`.
+
+**Missing `statuses: write` permission:** The workflow must include `statuses: write` in its permissions block, or the action will fail to set the commit status check.
+
+**Action logs:** All verification steps are logged in the GitHub Actions run. Check the `verify-approval` job output for detailed per-comment processing and error messages.
+
 ## Where to get help
 
 If you have questions, encounter bugs, or want to request a feature, please [open an issue](https://github.com/Jamf-Concepts/crypto-approval-action/issues) on GitHub.
@@ -396,4 +410,6 @@ This action uses the following open-source libraries:
 
 ## License
 
-MIT
+MIT — Copyright 2026, Jamf Software LLC
+
+For privacy information, see [Jamf's Privacy Policy](https://jamf.com/privacy).
