@@ -1,3 +1,4 @@
+// Copyright 2026, Jamf Software LLC
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright 2026, Jamf Software LLC
 
 import {
   createApprovalMessage,
@@ -94,3 +95,4 @@ main().catch((error) => {
   console.error('Error:', error.message)
   process.exit(1)
 })
+
