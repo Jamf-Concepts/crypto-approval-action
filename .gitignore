@@ -34,3 +34,14 @@ npm-debug.log*
 
 # OSS pre-release checklist (local only — do not commit)
 jamf-oss-developer-checklist-*.md
+# Concepts audit reports (local/Confluence only — never commit; repo may become public)
+*-concept-audit-report-*.md
+*-concept-audit-report-*.pdf
+
+# Audit scan outputs (local reference only)
+codeql-results-*.sarif
+gitleaks-results-*.txt
+npm-audit-results-*.json
+
+# Claude Code local settings
+.claude/settings.local.json
