@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright 2026, Jamf Software LLC
 
 import {
   createApprovalMessage,
@@ -41,25 +42,31 @@ The signature should be the 65-byte secp256k1 signature (r, s, v).
     process.exit(1)
   }
 
-  console.log('\n=== Crypto-Signed PR Approval ===\n')
+  console.log('
+=== Crypto-Signed PR Approval ===
+')
   console.log(`Repository: ${repo}`)
   console.log(`PR Number:  ${prNumber}`)
   console.log(`Head SHA:   ${headSha}`)
 
   const message = createApprovalMessage(repo, prNumber, headSha)
 
-  console.log('\n--- Approval Message ---')
+  console.log('
+--- Approval Message ---')
   console.log(JSON.stringify(message, null, 2))
 
   const serialized = serializeMessage(message)
-  console.log('\n--- Serialized Message (what gets signed) ---')
+  console.log('
+--- Serialized Message (what gets signed) ---')
   console.log(serialized)
 
   const messageHash = hashPersonalMessage(serialized)
-  console.log('\n--- EIP-191 Message Hash (keccak256 with Ethereum prefix) ---')
+  console.log('
+--- EIP-191 Message Hash (keccak256 with Ethereum prefix) ---')
   console.log(`0x${Buffer.from(messageHash).toString('hex')}`)
 
-  console.log('\n--- Instructions ---')
+  console.log('
+--- Instructions ---')
   console.log('1. Sign the above hash with your hardware wallet')
   console.log('2. Use personal_sign or eth_sign method')
   console.log('3. Paste the 65-byte signature (130 hex chars) below')
@@ -73,7 +80,8 @@ The signature should be the 65-byte secp256k1 signature (r, s, v).
   })
 
   const signature = await new Promise<string>((resolve) => {
-    rl.question('\nEnter signature (hex): ', (answer) => {
+    rl.question('
+Enter signature (hex): ', (answer) => {
       rl.close()
       resolve(answer.trim().replace('0x', ''))
     })
@@ -81,12 +89,15 @@ The signature should be the 65-byte secp256k1 signature (r, s, v).
 
   if (signature.length !== 130) {
     console.error(
-      `\nError: Signature must be 130 hex characters (65 bytes), got ${signature.length}`
+      `
+Error: Signature must be 130 hex characters (65 bytes), got ${signature.length}`
     )
     process.exit(1)
   }
 
-  console.log('\n=== PR Comment (copy and paste to GitHub) ===\n')
+  console.log('
+=== PR Comment (copy and paste to GitHub) ===
+')
   console.log(formatApprovalComment(message, signature))
 }
 
