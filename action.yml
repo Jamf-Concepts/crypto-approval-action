@@ -53,5 +53,5 @@ outputs:
     description: 'The canary wallet balance (if checked)'
 
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'
