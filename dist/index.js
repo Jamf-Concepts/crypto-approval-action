@@ -50062,7 +50062,7 @@ ${signature}
 \`\`\`
 
 ---
-*Verified by [crypto-approval-action](https://github.com/danjamf/crypto-approval-action)*`;
+*Verified by [crypto-approval-action](https://github.com/Jamf-Concepts/crypto-approval-action)*`;
 }
 function isMessageExpired(message, maxAgeSeconds) {
     const now = Math.floor(Date.now() / 1000);
